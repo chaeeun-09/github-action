@@ -16,8 +16,8 @@ jobs:
       run: |
         echo "${{ secrets.EC2_SSH_KEY }}" > key.pem
         chmod 600 key.pem
-        # 예: 정적 html 파일이 루트에 있다면 ./* 대신 복사할 경로 지정
-        scp -i key.pem -o StrictHostKeyChecking=no -r ./public/* ubuntu@${{ secrets.EC2_HOST }}:/var/www/html
+        scp -i key.pem -o StrictHostKeyChecking=no index.html ubuntu@${{ secrets.EC2_HOST }}:/var/www/html
         rm -f key.pem
+
 
 
