@@ -16,7 +16,7 @@ jobs:
       run: |
         echo "${{ secrets.EC2_SSH_KEY }}" > key.pem
         chmod 600 key.pem
-        ssh -o StrictHostKeyChecking=no -i key.pem ec2-user@${{ secrets.EC2_HOST }} << EOF
+        ssh -o StrictHostKeyChecking=no -i key.pem ubuntu@${{ secrets.EC2_HOST }} << EOF
           cd /home/ec2-user/my-app
           git pull origin main
           npm install
