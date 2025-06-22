@@ -9,13 +9,16 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+    # 1. GitHub 저장소 checkout
     - name: Checkout
       uses: actions/checkout@v3
 
+    # 2. appspec.yml 등을 포함해 전체를 zip으로 압축
     - name: Make deploy.zip (include appspec.yml)
       run: |
         zip -r deploy.zip . -x ".git/*"
 
+    # 3. 압축 파일을 S3에 업로드
     - name: Upload to S3
       run: |
         aws s3 cp deploy.zip s3://codedeploy-bucket-chaeeun/code-deploy/deploy.zip --region ap-northeast-2
@@ -23,13 +26,26 @@ jobs:
         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
+    # ✅ 4. 배포 그룹 존재 확인 (디버깅용)
+    - name: Check if deployment group exists
+      run: |
+        aws deploy get-deployment-group \
+          --application-name my-app \
+          --deployment-group-name my-deploy-group \
+          --region ap-northeast-2
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+    # 5. CodeDeploy 배포 시작
     - name: Trigger deployment
       run: |
         aws deploy create-deployment \
           --application-name my-app \
           --deployment-group-name my-deploy-group \
           --s3-location bucket=codedeploy-bucket-chaeeun,key=code-deploy/deploy.zip,bundleType=zip \
-          --region ap-northeast-2
+          --region ap-northeast-2 \
+          --output json
       env:
         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
