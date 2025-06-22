@@ -2,26 +2,26 @@ name: Deploy HTML via CodeDeploy
 
 on:
   push:
-    branches: [main]
+    branches: [ main ]
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
-      - name: ✅ 코드 가져오기
+      - name: 📥 코드 가져오기
         uses: actions/checkout@v3
 
-      - name: 📦 프로젝트 압축 (deploy.zip)
+      - name: 📦 zip 파일 만들기
         run: |
-          zip -r deploy.zip . -x ".git/*" ".github/*"
+          zip -r deploy.zip . -x ".git/*"
 
       - name: ☁️ S3에 업로드
         uses: jakejarvis/s3-sync-action@master
         with:
           args: --acl private
         env:
-          AWS_S3_BUCKET: your-s3-bucket-name           # ← 여기에 S3 버킷 이름
+          AWS_S3_BUCKET: codedeploy-bucket-chaeeun        # ✅ 여기!
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_REGION: ap-northeast-2
@@ -31,11 +31,15 @@ jobs:
       - name: 🚀 CodeDeploy로 배포 트리거
         uses: webfactory/create-aws-codedeploy-deployment@v0.2.0
         with:
-          application-name: my-app                     # ← CodeDeploy 앱 이름
-          deployment-group: my-deploy-group            # ← 배포 그룹 이름
+          application-name: my-app
+          deployment-group: my-deploy-group
           deployment-revision: S3
-          bucket: your-s3-bucket-name
+          bucket: codedeploy-bucket-chaeeun              # ✅ 여기도!
           key: code-deploy/deploy.zip
-
+          bundle-type: zip
+          region: ap-northeast-2
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
 
