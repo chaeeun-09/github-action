@@ -29,7 +29,7 @@ jobs:
           DEST_DIR: code-deploy/
 
       - name: 🚀 CodeDeploy로 배포 트리거
-        uses: webfactory/create-aws-codedeploy-deployment@v1
+        uses: webfactory/create-aws-codedeploy-deployment@v0.2.0
         with:
           application-name: my-app                     # ← CodeDeploy 앱 이름
           deployment-group: my-deploy-group            # ← 배포 그룹 이름
