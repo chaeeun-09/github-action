@@ -1,4 +1,4 @@
-name: Deploy HTML via CodeDeploy
+name: Deploy via CodeDeploy
 
 on:
   push:
@@ -9,31 +9,30 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: 📥 코드 가져오기
-        uses: actions/checkout@v3
+    - name: Checkout
+      uses: actions/checkout@v3
 
-      - name: 📦 zip 파일 만들기
-        run: |
-          zip -r deploy.zip . -x ".git/*"
+    - name: Make deploy.zip (include appspec.yml)
+      run: |
+        zip -r deploy.zip . -x ".git/*"
 
-      - name: ☁️ S3에 업로드
-        run: |
-          aws s3 cp deploy.zip s3://codedeploy-bucket-chaeeun/code-deploy/deploy.zip
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_DEFAULT_REGION: ap-northeast-2
+    - name: Upload to S3
+      run: |
+        aws s3 cp deploy.zip s3://codedeploy-bucket-chaeeun/code-deploy/deploy.zip --region ap-northeast-2
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
-      - name: 🚀 CodeDeploy로 배포 트리거
-        run: |
-          aws deploy create-deployment \
-            --application-name my-app \
-            --deployment-group-name my-deploy-group \
-            --s3-location bucket=codedeploy-bucket-chaeeun,key=code-deploy/deploy.zip,bundleType=zip \
-            --deployment-config-name CodeDeployDefault.AllAtOnce \
-            --region ap-northeast-2
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+    - name: Trigger deployment
+      run: |
+        aws deploy create-deployment \
+          --application-name my-app \
+          --deployment-group-name my-deploy-group \
+          --s3-location bucket=codedeploy-bucket-chaeeun,key=code-deploy/deploy.zip,bundleType=zip \
+          --region ap-northeast-2
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
 
 
